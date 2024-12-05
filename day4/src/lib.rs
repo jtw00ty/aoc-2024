@@ -9,11 +9,11 @@ where
     lines.map(|line| line.unwrap().chars().collect()).collect()
 }
 
-pub fn find_xs(word_search: &Vec<Vec<char>>) -> Vec<(usize, usize)> {
+pub fn find_char(char: &char, word_search: &Vec<Vec<char>>) -> Vec<(usize, usize)> {
     let mut out = vec![];
     for (i, row) in word_search.iter().enumerate() {
-        for (j, char) in row.iter().enumerate() {
-            if char == &'X' {
+        for (j, c) in row.iter().enumerate() {
+            if char == c {
                 out.push((i, j));
             }
         }
@@ -21,7 +21,7 @@ pub fn find_xs(word_search: &Vec<Vec<char>>) -> Vec<(usize, usize)> {
     out
 }
 
-pub fn check_x(word_search: &Vec<Vec<char>>, position: (usize, usize)) -> u16 {
+pub fn check_xmas(word_search: &Vec<Vec<char>>, position: (usize, usize)) -> usize {
     let mut total = 0;
 
     // ->
@@ -164,9 +164,48 @@ pub fn check_x(word_search: &Vec<Vec<char>>, position: (usize, usize)) -> u16 {
     total
 }
 
-pub fn num_xmas(word_search: &Vec<Vec<char>>) -> u16 {
-    find_xs(word_search)
+pub fn num_xmas(word_search: &Vec<Vec<char>>) -> usize {
+    find_char(&'X', word_search)
         .into_iter()
-        .map(|x| check_x(word_search, x))
+        .map(|x| check_xmas(word_search, x))
         .sum()
+}
+
+pub fn check_x_mas(word_search: &Vec<Vec<char>>, position: &(usize, usize)) -> bool {
+    const CORRECT_CORNERS: [(&char, &char, &char, &char); 4] = 
+    [
+        (&'M', &'M', &'S', &'S'),
+        (&'S', &'M', &'M', &'S'),
+        (&'S', &'S', &'M', &'M'),
+        (&'M', &'S', &'S', &'M')
+    ];
+
+
+    let corners = (
+        word_search
+            .get(position.0 - 1)
+            .and_then(|row| row.get(position.1 - 1))
+            .unwrap(),
+        word_search
+            .get(position.0 - 1)
+            .and_then(|row| row.get(position.1 + 1))
+            .unwrap(),
+        word_search
+            .get(position.0 + 1)
+            .and_then(|row| row.get(position.1 + 1))
+            .unwrap(),
+        word_search
+            .get(position.0 + 1)
+            .and_then(|row| row.get(position.1 - 1))
+            .unwrap(),
+    );
+    CORRECT_CORNERS.contains(&corners)
+}
+
+pub fn num_x_mas(word_search: &Vec<Vec<char>>) -> usize {
+    find_char(&'A', word_search)
+        .into_iter()
+        .filter(|(row, col)| ![0, 139].contains(row) && ![0, 139].contains(col))
+        .filter(|position| check_x_mas(word_search, position))
+        .count()
 }

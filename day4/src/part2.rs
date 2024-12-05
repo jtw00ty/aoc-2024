@@ -1,3 +1,6 @@
+use day4::*;
+
 fn main() {
-    println!("Hello, world!");
+    let word_search = read_word_search("input.txt");
+    println!("{}", num_x_mas(&word_search));
 }
