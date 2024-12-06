@@ -172,14 +172,12 @@ pub fn num_xmas(word_search: &Vec<Vec<char>>) -> usize {
 }
 
 pub fn check_x_mas(word_search: &Vec<Vec<char>>, position: &(usize, usize)) -> bool {
-    const CORRECT_CORNERS: [(&char, &char, &char, &char); 4] = 
-    [
+    const CORRECT_CORNERS: [(&char, &char, &char, &char); 4] = [
         (&'M', &'M', &'S', &'S'),
         (&'S', &'M', &'M', &'S'),
         (&'S', &'S', &'M', &'M'),
-        (&'M', &'S', &'S', &'M')
+        (&'M', &'S', &'S', &'M'),
     ];
-
 
     let corners = (
         word_search

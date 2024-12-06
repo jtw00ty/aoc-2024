@@ -4,5 +4,9 @@ members = [
     "day2",
     "day3",
     "day4",
-    "day5"
+    "day5", 
+    "day6"
 ]
+
+[workspace.dependencies]
+tokio = { version = "1.42", features = ['full'] }
