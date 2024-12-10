@@ -92,6 +92,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "day10"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "futures-concurrency",
+ "tokio",
+]
+
+[[package]]
 name = "day2"
 version = "0.1.0"
 

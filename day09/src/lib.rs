@@ -64,7 +64,7 @@ pub fn refrag(disk: &mut Disk) {
 
 pub fn defrag(disk: &mut Disk) {
     for (id, bounds) in disk.files.iter().enumerate().rev() {
-        if let Some((ref mut left, right)) = disk.gaps.iter_mut().find(|(left, right)| {
+        if let Some((ref mut left, _right)) = disk.gaps.iter_mut().find(|(left, right)| {
             (1 + right - left >= 1 + bounds.1 - bounds.0) && &bounds.0 > right
         }) {
             disk.disk[*left..=(*left + bounds.1 - bounds.0)].fill(Some(id));
