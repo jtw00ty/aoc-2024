@@ -45,7 +45,6 @@ where
     out.next_gap = out.disk.iter().position(|id| id.is_none()).unwrap();
 
     out.last_block = out.disk.iter().rposition(|id| id.is_some()).unwrap();
-    println!("{:?}", &out.gaps[0..100]);
     out
 }
 
