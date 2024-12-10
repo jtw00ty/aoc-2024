@@ -13,4 +13,6 @@ name = "part2"
 path = "src/part2.rs"
 
 [dependencies]
-tokio ={ workspace = true }
+futures = { workspace = true }
+futures-concurrency = { workspace = true }
+tokio = { workspace = true }

@@ -1,6 +1,9 @@
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::ops::{Add, AddAssign, Index, IndexMut};
+
+use futures::future::join_all;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
@@ -29,6 +32,14 @@ impl SpaceState {
     pub fn visited(&self) -> bool {
         if let SpaceState::Empty([up, down, left, right]) = self {
             *up || *down || *left || *right
+        } else {
+            false
+        }
+    }
+
+    pub fn visited_directed(&self, direction: Direction) -> bool {
+        if let SpaceState::Empty(dirs) = self {
+            dirs[direction as usize]
         } else {
             false
         }
@@ -69,12 +80,15 @@ impl AddAssign<Direction> for SpaceState {
     }
 }
 
+#[derive(Debug)]
 pub enum MoveResult {
-    Turn((usize, usize)),
-    Forward((usize, usize)),
+    Turn,
+    Forward,
     Gone,
+    Loop,
 }
 
+#[derive(Clone)]
 pub struct Map {
     map: Vec<Vec<SpaceState>>,
     start: (usize, usize),
@@ -146,66 +160,141 @@ impl Map {
                     return MoveResult::Gone;
                 }
                 if self[(guy.0 - 1, guy.1)] == SpaceState::Obstacle {
+                    if self[guy].visited_directed(Direction::Right) {
+                        return MoveResult::Loop;
+                    }
                     self.direction = Direction::Right;
                     self[guy] += Direction::Right;
-                    return MoveResult::Turn(guy);
+                    return MoveResult::Turn;
                 }
                 let new_loc = (guy.0 - 1, guy.1);
+                if self[new_loc].visited_directed(Direction::Up) {
+                    return MoveResult::Loop;
+                }
                 self.location = new_loc;
                 self[new_loc] += Direction::Up;
-                MoveResult::Forward(self.location)
+                MoveResult::Forward
             }
             Direction::Down => {
                 if self.location.0 == Self::SIZE - 1 {
                     return MoveResult::Gone;
                 }
                 if self[(guy.0 + 1, guy.1)] == SpaceState::Obstacle {
+                    if self[guy].visited_directed(Direction::Left) {
+                        return MoveResult::Loop;
+                    }
                     self.direction = Direction::Left;
                     self[guy] += Direction::Left;
-                    return MoveResult::Turn(guy);
+                    return MoveResult::Turn;
                 }
                 let new_loc = (guy.0 + 1, guy.1);
+                if self[new_loc].visited_directed(Direction::Down) {
+                    return MoveResult::Loop;
+                }
                 self.location = new_loc;
                 self[new_loc] += Direction::Down;
-                MoveResult::Forward(self.location)
+                MoveResult::Forward
             }
             Direction::Left => {
                 if self.location.1 == 0 {
                     return MoveResult::Gone;
                 }
                 if self[(guy.0, guy.1 - 1)] == SpaceState::Obstacle {
+                    if self[guy].visited_directed(Direction::Up) {
+                        return MoveResult::Loop;
+                    }
                     self.direction = Direction::Up;
                     self[guy] += Direction::Up;
-                    return MoveResult::Turn(guy);
+                    return MoveResult::Turn;
                 }
                 let new_loc = (guy.0, guy.1 - 1);
+                if self[new_loc].visited_directed(Direction::Left) {
+                    return MoveResult::Loop;
+                }
                 self[new_loc] += Direction::Left;
                 self.location = new_loc;
-                MoveResult::Forward(self.location)
+                MoveResult::Forward
             }
             Direction::Right => {
                 if self.location.1 == Self::SIZE - 1 {
                     return MoveResult::Gone;
                 }
                 if self[(guy.0, guy.1 + 1)] == SpaceState::Obstacle {
+                    if self[guy].visited_directed(Direction::Down) {
+                        return MoveResult::Loop;
+                    }
                     self.direction = Direction::Down;
                     self[guy] += Direction::Down;
-                    return MoveResult::Turn(guy);
+                    return MoveResult::Turn;
                 }
                 let new_loc = (guy.0, guy.1 + 1);
+                if self[new_loc].visited_directed(Direction::Right) {
+                    return MoveResult::Loop;
+                }
                 self.location = new_loc;
                 self[new_loc] += Direction::Right;
-                MoveResult::Forward(self.location)
+                MoveResult::Forward
             }
         }
     }
 
-    pub fn run_route(&mut self) {
+    pub async fn run_route(&mut self) -> MoveResult {
         loop {
-            if let MoveResult::Gone = self.move_guy() {
-                break;
+            match self.move_guy() {
+                MoveResult::Gone => return MoveResult::Gone,
+                MoveResult::Loop => return MoveResult::Loop,
+                _ => continue,
             }
         }
+    }
+
+    fn in_bounds(loc: &(usize, usize)) -> bool {
+        loc.0 < Self::SIZE && loc.1 < Self::SIZE
+    }
+
+    pub async fn loop_obstacles(&mut self) -> HashSet<(usize, usize)> {
+        let mut futures = vec![];
+        loop {
+            let (row, col) = self.location;
+            let next = match self.direction {
+                Direction::Up => (row - 1, col),
+                Direction::Down => (row + 1, col),
+                Direction::Left => (row, col - 1),
+                Direction::Right => (row, col + 1),
+            };
+
+            if !Self::in_bounds(&next)
+                || self[next].visited()
+                || self.start == next
+                || self[next] == SpaceState::Obstacle
+            {
+                match self.move_guy() {
+                    MoveResult::Gone => break,
+                    _ => continue,
+                };
+            }
+            let mut potential = self.clone();
+            potential[next] = SpaceState::Obstacle;
+
+            futures.push(tokio::spawn(async move {
+                let res = potential.run_route().await;
+                match res {
+                    MoveResult::Loop => Some(next),
+                    _ => None,
+                }
+            }));
+
+            match self.move_guy() {
+                MoveResult::Gone => break,
+                _ => continue,
+            }
+        }
+
+        join_all(futures)
+            .await
+            .into_iter()
+            .filter_map(|loc| loc.unwrap())
+            .collect()
     }
 
     pub fn count_visited(&self) -> usize {
