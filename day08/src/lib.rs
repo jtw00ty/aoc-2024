@@ -25,9 +25,7 @@ impl Sub<Vector> for Vector {
 }
 
 impl SubAssign<Vector> for Vector {
-
     fn sub_assign(&mut self, rhs: Vector) {
-        
         self.0 -= rhs.0;
         self.1 -= rhs.1;
     }
@@ -41,16 +39,12 @@ impl Add<Vector> for Vector {
     }
 }
 
-
 impl AddAssign<Vector> for Vector {
-
     fn add_assign(&mut self, rhs: Vector) {
-        
         self.0 += rhs.0;
         self.1 += rhs.1;
     }
 }
-
 
 pub fn read_input<P>(path: P) -> Map
 where
@@ -121,5 +115,4 @@ pub fn find_nodes_harmonic(map: &Map) -> LocationList {
     }
 
     out.into_iter().collect()
-
 }

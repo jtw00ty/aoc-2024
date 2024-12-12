@@ -13,7 +13,7 @@ impl Operator {
         match self {
             Self::Plus => a + b,
             Self::Times => a * b,
-            Self::Concat => a* 10_f64.powf(b.log10().floor() + 1_f64) + b,
+            Self::Concat => a * 10_f64.powf(b.log10().floor() + 1_f64) + b,
         }
     }
 }
@@ -89,7 +89,7 @@ impl Equation {
         }
     }
 
-    fn eval(&self, operators: &Vec<Operator>) -> f64 {
+    fn eval(&self, operators: &[Operator]) -> f64 {
         let mut operands = self.operands.iter();
         let operators = operators.iter();
         let first = operands.next().unwrap();

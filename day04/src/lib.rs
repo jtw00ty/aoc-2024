@@ -9,7 +9,7 @@ where
     lines.map(|line| line.unwrap().chars().collect()).collect()
 }
 
-pub fn find_char(char: &char, word_search: &Vec<Vec<char>>) -> Vec<(usize, usize)> {
+pub fn find_char(char: &char, word_search: &[Vec<char>]) -> Vec<(usize, usize)> {
     let mut out = vec![];
     for (i, row) in word_search.iter().enumerate() {
         for (j, c) in row.iter().enumerate() {
@@ -21,7 +21,7 @@ pub fn find_char(char: &char, word_search: &Vec<Vec<char>>) -> Vec<(usize, usize
     out
 }
 
-pub fn check_xmas(word_search: &Vec<Vec<char>>, position: (usize, usize)) -> usize {
+pub fn check_xmas(word_search: &[Vec<char>], position: (usize, usize)) -> usize {
     let mut total = 0;
 
     // ->
@@ -171,7 +171,7 @@ pub fn num_xmas(word_search: &Vec<Vec<char>>) -> usize {
         .sum()
 }
 
-pub fn check_x_mas(word_search: &Vec<Vec<char>>, position: &(usize, usize)) -> bool {
+pub fn check_x_mas(word_search: &[Vec<char>], position: &(usize, usize)) -> bool {
     const CORRECT_CORNERS: [(&char, &char, &char, &char); 4] = [
         (&'M', &'M', &'S', &'S'),
         (&'S', &'M', &'M', &'S'),

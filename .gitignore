@@ -1,3 +1,4 @@
 target
 input.txt
 evil-input.txt
+Cargo.lock

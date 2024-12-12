@@ -9,7 +9,7 @@ fn main() {
         lists
             .0
             .iter()
-            .filter(|num| appearances.contains_key(&num))
+            .filter(|num| appearances.contains_key(num))
             .map(|num| num * appearances.get(num).unwrap())
             .sum::<u32>()
     )

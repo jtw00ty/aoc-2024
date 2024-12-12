@@ -46,7 +46,7 @@ pub fn switch_indices(mem: &str) -> Vec<usize> {
             .iter()
             .find(|index| index > &switches.last().unwrap())
         {
-            Some(i) => switches.push(i.clone()),
+            Some(i) => switches.push(*i),
             None => {
                 break;
             }

@@ -16,7 +16,7 @@ where
         .collect()
 }
 
-pub fn is_safe(report: &Vec<i16>) -> bool {
+pub fn is_safe(report: &[i16]) -> bool {
     let mut pairs = report.iter().zip(report.iter().skip(1));
     let ascending = pairs
         .clone()
@@ -26,16 +26,16 @@ pub fn is_safe(report: &Vec<i16>) -> bool {
     pairs.all(|(first, second)| {
         let diff = second - first;
         if ascending {
-            diff > 0 && diff <= 3
+            (1..=3).contains(&diff)
         } else {
-            diff < 0 && diff >= -3
+            (-3..0).contains(&diff)
         }
     })
 }
 
-pub fn is_safe_dampened(report: &Vec<i16>) -> bool {
+pub fn is_safe_dampened(report: &[i16]) -> bool {
     for i in 0..report.len() {
-        let mut candidate = report.clone();
+        let mut candidate = report.to_owned();
         candidate.remove(i);
         if is_safe(&candidate) {
             return true;

@@ -52,7 +52,7 @@ impl Add<Direction> for SpaceState {
     fn add(self, rhs: Direction) -> Self::Output {
         Self::Empty(match self {
             Self::Empty(dirs) => {
-                let mut d = dirs.clone();
+                let mut d = dirs;
                 d[rhs as usize] = true;
                 d
             }
