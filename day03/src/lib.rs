@@ -11,14 +11,12 @@ where
 }
 
 pub fn find_muls(mem: &str) -> Vec<(i32, i32)> {
-    let pat = Regex::new(r"mul\(\d{1,3},\d{1,3}\)").unwrap();
-    pat.find_iter(mem)
+    let pat = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
+    pat.captures_iter(mem)
         .map(|mul| {
-            let mut split = mul.as_str().split(&['(', ')', ',']);
-            split.next();
             (
-                split.next().unwrap().parse().unwrap(),
-                split.next().unwrap().parse().unwrap(),
+                mul[1].parse().unwrap(),
+                mul[2].parse().unwrap()
             )
         })
         .collect()
@@ -33,7 +31,7 @@ pub fn do_indices(mem: &str) -> Vec<usize> {
 pub fn dont_indices(mem: &str) -> Vec<usize> {
     let donts = Regex::new(r"don't\(\)").unwrap();
     let dont_matches = donts.find_iter(mem);
-    dont_matches.map(|m| m.end()).collect()
+    dont_matches.map(|m| m.start()).collect()
 }
 
 pub fn switch_indices(mem: &str) -> Vec<usize> {

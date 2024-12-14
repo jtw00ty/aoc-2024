@@ -61,6 +61,26 @@ pub fn refrag(disk: &mut Disk) {
     }
 }
 
+pub fn refrag_checksum(disk: &Disk) -> usize {
+    let mut out = 0;
+    let mut end = disk.disk.iter().rposition(|pos| pos.is_some()).unwrap();
+    let mut cur = 0;
+    while cur <= end {
+        if let Some(id) = disk.disk[cur] {
+            out += cur*id;
+            
+        } else {
+            out += disk.disk[end].unwrap() * cur;
+            end -= 1;
+        }
+        while disk.disk[end].is_none() && end > cur {
+            end -= 1;
+        }
+        cur += 1; 
+    }
+    out
+}
+
 pub fn defrag(disk: &mut Disk) {
     for (id, bounds) in disk.files.iter().enumerate().rev() {
         if let Some((ref mut left, _right)) = disk.gaps.iter_mut().find(|(left, right)| {
